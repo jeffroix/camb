@@ -21,6 +21,8 @@ permissions:
 jobs:
   build:
     runs-on: macos-15-intel
+    env:
+      CRAN_REPOSITORY: https://packagemanager.posit.co/cran/${{ matrix.cran-snapshot }}/
     strategy:
       fail-fast: false
       matrix:
@@ -37,8 +39,6 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
       - name: Configure pinned CRAN snapshot
-        env:
-          CRAN_REPOSITORY: https://packagemanager.posit.co/cran/${{ matrix.cran-snapshot }}/
         run: echo 'options(repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))' >> "$HOME/.Rprofile"
       - name: Install dependencies
         working-directory: camb
