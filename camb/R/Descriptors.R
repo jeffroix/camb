@@ -132,7 +132,7 @@ GeneratePadelDescriptors <- function(standardised.file, types = c("2D"), threads
   if (file.info(standardised.file)$size  == 0) {stop("Input file is empty")}
   descriptors.file <- tempfile("descriptors", fileext=".csv")
   GeneratePadelDescriptors.internal(standardised.file, descriptors.file, types, threads)
-  read.csv(descriptors.file)
+  read.csv(descriptors.file, stringsAsFactors = TRUE)
 }
 
 GeneratePadelDescriptorsFile <- function(standardised.file, descriptors.file, types = c("2D"), threads = -1, limit = -1) {
