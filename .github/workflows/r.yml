@@ -42,6 +42,11 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
           use-public-rspm: true
+      - name: Use GCC common symbols for R 3.6 dependencies
+        if: matrix.r-version == '3.6.3'
+        run: |
+          mkdir -p "$HOME/.R"
+          echo 'CFLAGS += -fcommon' >> "$HOME/.R/Makevars"
       - name: Install dependencies from the pinned CRAN snapshot
         run: |
           Rscript -e 'install.packages(c("remotes", "rcmdcheck"), repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
