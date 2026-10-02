@@ -27,8 +27,13 @@ jobs:
         include:
           - r-version: '3.6.3'
             os: ubuntu-22.04
+            rspm-snapshot: '2020-02-29'
           - r-version: '4.1.1'
             os: ubuntu-22.04
+            rspm-snapshot: '2021-08-10'
+
+    env:
+      CRAN_REPOSITORY: https://packagemanager.posit.co/cran/__linux__/jammy/${{ matrix.rspm-snapshot }}
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -37,10 +42,10 @@ jobs:
         with:
           r-version: ${{ matrix.r-version }}
           use-public-rspm: true
-      - uses: r-lib/actions/setup-r-dependencies@a51a8012b0aab7c32ef9d19bf54da93f3254335e # v2.12.0
-        with:
-          working-directory: camb
-          extra-packages: any::rcmdcheck
+      - name: Install dependencies from the pinned CRAN snapshot
+        run: |
+          Rscript -e 'install.packages(c("remotes", "rcmdcheck"), repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
+          Rscript -e 'remotes::install_deps("camb", dependencies = TRUE, repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
       - uses: r-lib/actions/check-r-package@a51a8012b0aab7c32ef9d19bf54da93f3254335e # v2.12.0
         with:
           working-directory: camb
