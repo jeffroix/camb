@@ -11,6 +11,7 @@ test_that("GeneratePadelDescriptors provides outputs consistent with reference o
     cat("Descriptor diagnostic: dimensions reference/current =", paste(dim(reference), collapse = "x"), "/", paste(dim(descriptors), collapse = "x"), "\n")
     cat("Descriptor diagnostic: class-mismatched columns =", paste(class_mismatches, collapse = ", "), "\n")
     cat("Descriptor diagnostic: value-mismatched columns =", length(value_mismatches), "\n")
+    cat("Descriptor diagnostic: value mismatches outside class changes =", paste(head(setdiff(value_mismatches, class_mismatches), 50), collapse = ", "), "\n")
     for (n in head(class_mismatches, 12)) {
       cat("Class diagnostic", n, ": reference", paste(class(reference[[n]]), collapse = "/"), "current", paste(class(descriptors[[n]]), collapse = "/"), "\n")
       cat("  reference head:", paste(as.character(head(reference[[n]], 4)), collapse = " | "), "\n")
@@ -22,6 +23,14 @@ test_that("GeneratePadelDescriptors provides outputs consistent with reference o
     }
     for (n in head(setdiff(value_mismatches, class_mismatches), 12)) {
       cat("Value diagnostic", n, ": reference", paste(as.character(head(reference[[n]], 4)), collapse = " | "), "current", paste(as.character(head(descriptors[[n]], 4)), collapse = " | "), "\n")
+      if (is.numeric(reference[[n]]) && is.numeric(descriptors[[n]])) {
+        differing_rows <- which(reference[[n]] != descriptors[[n]])
+        cat("  differing row count:", length(differing_rows), "first rows:", paste(head(differing_rows, 10), collapse = ", "), "\n")
+        if (length(differing_rows)) {
+          rows <- head(differing_rows, 10)
+          cat("  differing values:", paste(paste0(rows, ":", reference$Name[rows], "=", reference[[n]][rows], "->", descriptors[[n]][rows]), collapse = " | "), "\n")
+        }
+      }
     }
   }
   expect_equal(reference, descriptors)
