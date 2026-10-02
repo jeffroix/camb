@@ -50,6 +50,9 @@ jobs:
       - name: Install dependencies from the pinned CRAN snapshot
         run: |
           Rscript -e 'install.packages(c("remotes", "rcmdcheck"), repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
+          if [ "${{ matrix.r-version }}" = "3.6.3" ]; then
+            Rscript -e 'remotes::install_version("testthat", version = "3.1.4", repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/2022-06-15"))'
+          fi
           Rscript -e 'remotes::install_deps("camb", dependencies = TRUE, repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
       - uses: r-lib/actions/check-r-package@a51a8012b0aab7c32ef9d19bf54da93f3254335e # v2.12.0
         with:
