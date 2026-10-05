@@ -5,6 +5,23 @@ test_that("GeneratePadelDescriptors provides outputs consistent with reference o
   descriptors <- GeneratePadelDescriptors(standardised.file = "standardised.sdf", types=descriptor.types, threads = 1)
   descriptors <- RemoveStandardisedPrefix(descriptors)
   reference <- readRDS("reference_descriptors.rds")
+
+  # This reference was serialized with factor columns under an older R
+  # default. Compare the values while allowing R's factor/character/numeric
+  # representation to follow the current runtime.
+  for (n in names(reference)) {
+    expected <- reference[[n]]
+    actual <- descriptors[[n]]
+    if (is.factor(expected) && !is.factor(actual)) {
+      expected <- if (is.numeric(actual)) as.numeric(as.character(expected)) else as.character(expected)
+    }
+    if (is.factor(actual) && !is.factor(expected)) {
+      actual <- if (is.numeric(expected)) as.numeric(as.character(actual)) else as.character(actual)
+    }
+    reference[[n]] <- expected
+    descriptors[[n]] <- actual
+  }
+
   if (!isTRUE(all.equal(reference, descriptors))) {
     class_mismatches <- names(reference)[!vapply(names(reference), function(n) identical(class(reference[[n]]), class(descriptors[[n]])), logical(1))]
     value_mismatches <- names(reference)[!vapply(names(reference), function(n) isTRUE(all.equal(reference[[n]], descriptors[[n]])), logical(1))]
