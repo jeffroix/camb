@@ -9,6 +9,7 @@
 name: R
 
 on:
+  workflow_dispatch:
   push:
     branches: [ "master" ]
   pull_request:
@@ -19,22 +20,42 @@ permissions:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        r-version: ['3.6.3', '4.1.1']
+        include:
+          - r-version: '3.6.3'
+            os: ubuntu-22.04
+            rspm-snapshot: '2020-02-29'
+          - r-version: '4.1.1'
+            os: ubuntu-22.04
+            rspm-snapshot: '2021-08-10'
+
+    env:
+      CRAN_REPOSITORY: https://packagemanager.posit.co/cran/__linux__/jammy/${{ matrix.rspm-snapshot }}
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Set up R ${{ matrix.r-version }}
-        uses: r-lib/actions/setup-r@f57f1301a053485946083d7a45022b278929a78a
+        uses: r-lib/actions/setup-r@a51a8012b0aab7c32ef9d19bf54da93f3254335e # v2.12.0
         with:
           r-version: ${{ matrix.r-version }}
-      - name: Install dependencies
+          use-public-rspm: true
+      - name: Use GCC common symbols for R 3.6 dependencies
+        if: matrix.r-version == '3.6.3'
         run: |
-          install.packages(c("remotes", "rcmdcheck"))
-          remotes::install_deps(dependencies = TRUE)
-        shell: Rscript {0}
-      - name: Check
-        run: rcmdcheck::rcmdcheck(args = "--no-manual", error_on = "error")
-        shell: Rscript {0}
+          mkdir -p "$HOME/.R"
+          echo 'CFLAGS += -fcommon' >> "$HOME/.R/Makevars"
+      - name: Install dependencies from the pinned CRAN snapshot
+        run: |
+          Rscript -e 'install.packages(c("remotes", "rcmdcheck"), repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
+          if [ "${{ matrix.r-version }}" = "3.6.3" ]; then
+            Rscript -e 'remotes::install_version("testthat", version = "3.1.4", repos = c(CRAN = "https://packagemanager.posit.co/cran/__linux__/jammy/2022-06-15"))'
+          fi
+          Rscript -e 'remotes::install_deps("camb", dependencies = TRUE, repos = c(CRAN = Sys.getenv("CRAN_REPOSITORY")))'
+      - uses: r-lib/actions/check-r-package@a51a8012b0aab7c32ef9d19bf54da93f3254335e # v2.12.0
+        with:
+          working-directory: camb
+          args: 'c("--no-manual")'
+          error-on: '"error"'

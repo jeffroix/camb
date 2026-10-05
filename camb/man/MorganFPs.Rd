@@ -57,8 +57,11 @@ In addition, it also calcualates unhashed fingerprints, both binary and with cou
 
 }
 \examples{
+\dontrun{
+# Requires an external RDKit/Python installation; see the function arguments.
 test_mols <- system.file("test_structures", "structures_10.sdf", package = "camb")
 MorganFPs(bits=28,radii=c(0,1,2),mols=test_mols,output="test_mols")
+}
 
 #See the camb tutorials for more examples.
 
@@ -69,4 +72,3 @@ Isidro Cortes <isidrolauscher@gmail.com> and Daniel Murrell <dsmurrell@gmail.com
 \references{
 FingeprintCalculator.py. Isidro Cortes. 2013/2014. \url{http://github.com/isidroc/FingerprintCalculator}.
 }
-

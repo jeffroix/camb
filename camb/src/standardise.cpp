@@ -284,7 +284,7 @@ extern "C" {
                 }
                 bool highIodine = iodineLimit != -1 && containsMoreThanX(structure, iodineLimit, 53);
                 if(highIodine) {
-                    highIodine++;
+                    highIodineCount++;
                     Rprintf("%s (#%d) warning: molecule contains more than %d iodines\n", structureName.c_str(), structureIndex+1, iodineLimit);
                 }
                 
