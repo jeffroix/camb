@@ -5,6 +5,8 @@ test_that("GeneratePadelDescriptors provides outputs consistent with reference o
   descriptors <- GeneratePadelDescriptors(standardised.file = "standardised.sdf", types=descriptor.types, threads = 1)
   descriptors <- RemoveStandardisedPrefix(descriptors)
   reference <- readRDS("reference_descriptors.rds")
+  # The stored reference contains names from before this normalization.
+  reference <- RemoveStandardisedPrefix(reference)
 
   # This reference was serialized with factor columns under an older R
   # default. Compare the values while allowing R's factor/character/numeric
